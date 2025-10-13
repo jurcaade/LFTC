@@ -1,0 +1,11 @@
+ex 1) (0?[1-9]|[12][0-9]|3[01])(\.|\/)(0?[1-9]|1[012])(\.|\/)([0-9]{4}|[0-9][0-9])
+
+ex 2) [A-Z][a-zA-Z]*,[a-z]+ [0-9]+(\/.)*(\.|\?)
+cel mai scurt: A,a 1.
+
+ex 3) \[\^?([^\\\]]|\\.|([^\\\]]|\\.)-([^\\\]]|\\.))*\]
+\[ - incepe cu [ ; \] - se termina cu ]
+\^? - poate fi sau nu ^
+[^\\\]] - fara \ si ]
+\\. - orice caracter precedat de \
+([^\\\]]|\\.)-([^\\\]]|\\.)) - la stanga caracter simplu nu \ si ] urmat de - la dreapta la fel
