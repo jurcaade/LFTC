@@ -45,23 +45,32 @@ void tokenize(const char *pch){
 				line++;
 				pch++;
 				break;
-			case '\0':addTk(FINISH);return;
-			 case ',':
-                addTk(COMMA); pch++; break;
-            case ';':
-                addTk(SEMICOLON); pch++; break;
-            case ':':
-                addTk(COLON); pch++; break;
-            case '(':
-                addTk(LPAR); pch++; break;
-            case ')':
-                addTk(RPAR); pch++; break;
-			  case '+':
-                addTk(ADD); pch++; break;
-            case '-':
-                addTk(SUB); pch++; break;
-            case '*':
-                addTk(MUL); pch++; break;
+		
+			case '\0':addTk(FINISH);return; //sfarsit de fisier
+			case ',':addTk(COMMA); pch++; break;
+            case ';':addTk(SEMICOLON); pch++; break;
+            case ':':addTk(COLON); pch++; break;
+            case '(':addTk(LPAR); pch++; break;
+            case ')':addTk(RPAR); pch++; break;
+			case '+':addTk(ADD); pch++; break;
+            case '-':addTk(SUB); pch++; break;
+            case '*':addTk(MUL); pch++; break;
+			case '&':
+			if (pch[1] == '&') {
+				addTk(AND);
+				pch += 2;
+			} else {
+				err("Lipseste al doilea & pentru operatorul && %d",line);
+			}
+			break;
+			case '|':
+			if (pch[1] == '|') {
+					addTk(OR);
+					pch += 2;
+			} else {
+					err("Lipseste al doilea | pentru operatorul ||");
+				}
+				break;
 			case '/':
 				if(pch[1] == '/') {
 					// sari peste comentariu pana la newline
@@ -72,8 +81,7 @@ void tokenize(const char *pch){
 					pch++;
 				}
 				break;
-
-			 case '<':
+			case '<':
                 if (pch[1] == '=') { addTk(LESSEQ); pch += 2; }
                 else { addTk(LESS); pch++; }
                 break;
@@ -85,7 +93,6 @@ void tokenize(const char *pch){
                 if (pch[1] == '=') { addTk(NOTEQ); pch += 2; }
                 else { addTk(NOT); pch++; }
                 break;
-
 			case '=':
 				if(pch[1]=='='){
 					addTk(EQUAL);
@@ -98,77 +105,53 @@ void tokenize(const char *pch){
 			case '"':
 				start = ++pch;
 				while(*pch != '"' && *pch != '\0') pch++;
-				if(*pch != '"') err("unterminated string");
-				tk = addTk(STR);   // folosește codul STR pentru constante
+				if(*pch != '"') err("Sir neterminat"); //mesaj eroare
+				tk = addTk(STR);   // folosește codul STR pentru constante string
 				copyn(tk->text, start, pch);
 				pch++;
+				
 				break;
-
-
 			default:
-				if(isalpha(*pch)||*pch=='_'){
+			//id sau cuvant cheie
+				if(isalpha(*pch)||*pch=='_'){ 
 					for(start=pch++;isalnum(*pch)||*pch=='_';pch++){}
 					char *text=copyn(buf,start,pch);
 					if(strcmp(text,"int")==0)addTk(TYPE_INT);
-					// alte cuvinte cheie
-				else if (strcmp(text, "real") == 0)
-				{
-					addTk(TYPE_REAL);
+					else if(strcmp(text,"real")==0)addTk(TYPE_REAL);
+					else if(strcmp(text,"str")==0)addTk(TYPE_STR);
+					else if(strcmp(text,"var")==0)addTk(VAR);
+					else if(strcmp(text,"function")==0)addTk(FUNCTION);
+					else if(strcmp(text,"if")==0)addTk(IF);
+					else if(strcmp(text,"else")==0)addTk(ELSE);
+					else if(strcmp(text,"while")==0)addTk(WHILE);
+					else if(strcmp(text,"end")==0)addTk(END);
+					else if(strcmp(text,"return")==0)addTk(RETURN);
+					else { // dacă nu e cuvânt cheie → ID
+						tk = addTk(ID);
+						strcpy(tk->text, text);
+					}
 				}
-				else if (strcmp(text, "str") == 0)
-				{
-					addTk(TYPE_STR);
-				}
-				else if (strcmp(text, "var") == 0)
-				{
-					addTk(VAR);
-				}
-				else if (strcmp(text, "function") == 0)
-				{
-					addTk(FUNCTION);
-				}
-				else if (strcmp(text, "if") == 0)
-				{
-					addTk(IF);
-				}
-				else if (strcmp(text, "else") == 0)
-				{
-					addTk(ELSE);
-				}
-				else if (strcmp(text, "while") == 0)
-				{
-					addTk(WHILE);
-				}
-				else if (strcmp(text, "end") == 0)
-				{
-					addTk(END);
-				}
-				else if (strcmp(text, "return") == 0)
-				{
-					addTk(RETURN);
-				}
-				else if (isdigit(*pch))
-				{
-				}
-					else{
-						tk=addTk(ID);
-						strcpy(tk->text,text);
+				 // INT sau REAL
+					else if(isdigit(*pch)){
+						start = pch;
+						int isReal = 0;
+						while(isdigit(*pch)) pch++;
+						
+						if(*pch == '.'){
+							if(isdigit(pch[1])){       // verificam daca urmeaza partea zecimala
+								isReal = 1;
+								pch++;                 // sarim peste .
+								while(isdigit(*pch)) pch++;
+							} else {
+								err("Numar real incomplet la linia %d", line); //mesaj eroare
+							}
 						}
-				}
-				else if (isdigit(*pch)) {
-				start = pch;
-				int isReal = 0;
-				while (isdigit(*pch)) pch++;
-				if (*pch == '.' && isdigit(pch[1])) {
-					isReal = 1;
-					pch++;
-					while (isdigit(*pch)) pch++;
-				}
-				copyn(buf, start, pch);
-				tk = addTk(isReal ? REAL : INT);  // folosește codurile pentru constante
-				if(isReal) tk->r = atof(buf);
-				else tk->i = atoi(buf);
-				}
+						
+						copyn(buf, start, pch);
+						tk = addTk(isReal ? REAL : INT);
+						if(isReal) tk->r = atof(buf); //convertim in double si il salvam in tk->r
+						else tk->i = atoi(buf); //convertim in int si il salvam in tk->i
+					}
 				else err("invalid char: %c (%d)",*pch,*pch);
 			}
 		}
@@ -181,14 +164,13 @@ void showTokens() {
         "COMMA","SEMICOLON","COLON","LPAR","RPAR","FINISH",
         "ADD","SUB","MUL","DIV","AND","OR","NOT","ASSIGN","EQUAL","NOTEQ",
         "LESS","GREATER","GREATEREQ","LESSEQ",
-		 // literal names
    		 "INT","REAL","STR"
     };
 
     for(int i = 0; i < nTokens; i++){
         Token *tk = &tokens[i];
         int code = tk->code;
-        const char *name = (code >= 0 && code < (int)(sizeof(tokenNames)/sizeof(tokenNames[0])))
+        const char *name = (code >= 0 && code < (int)(sizeof(tokenNames)/sizeof(tokenNames[0]))) //verificam daca code este in intervalul valid
                             ? tokenNames[code] : "UNKNOWN";
 
         printf("%d %s", tk->line, name);
