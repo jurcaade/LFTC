@@ -1,61 +1,61 @@
 #pragma once
 
 enum{
-    ID
-    // keywords
-    ,VAR  // 'var'
-    ,FUNCTION // 'function'
-    ,IF // 'if'
-    ,ELSE // 'else'
-    ,WHILE // 'while'
-    ,END // 'end'
-    ,RETURN // 'return'
-    ,TYPE_INT // 'int'
-    ,TYPE_REAL // 'real'
-    ,TYPE_STR // 'str'
-    // delimiters
-    ,COMMA // ','
-    ,SEMICOLON // ';'
-    ,COLON // ':'
-    ,LPAR // '('
-    ,RPAR // ')'
-    ,FINISH // '\0' | EOF
-    // operators
-    ,ADD // '+'
-    ,SUB // '-'
-    ,MUL // '*'
-    ,DIV // '/'
-    ,AND // '&&'
-    ,OR // '||'
-    ,NOT // '!'
-    ,ASSIGN // '='
-    ,EQUAL // '=='
-    ,NOTEQ // '!='
-    ,LESS // '<'
-    ,GREATER // '>'
-    ,GREATEREQ // '>='
-    ,LESSEQ // '<='
+	ID
+	// keywords
+	,VAR  // 'var'
+	,FUNCTION // 'function'
+	,IF // 'if'
+	,ELSE // 'else'
+	,WHILE // 'while'
+	,END // 'end'
+	,RETURN // 'return'
+	,TYPE_INT // 'int'
+	,TYPE_REAL // 'real'
+	,TYPE_STR // 'str'
+	// delimiters
+	,COMMA // ','
+	,SEMICOLON // ';'
+	,COLON // ':'
+	,LPAR // '('
+	,RPAR // ')'
+	,FINISH // '\0' | EOF
+	// operators
+	,ADD // '+'
+	,SUB // '-'
+	,MUL // '*'
+	,DIV // '/'
+	,AND // '&&'
+	,OR // '||'
+	,NOT // '!'
+	,ASSIGN // '='
+	,EQUAL // '=='
+	,NOTEQ // '!='
+	,LESS // '<'
+	,GREATER // '>'
+	,GREATEREQ // '>='
+	,LESSEQ // '<='
 
-    // literal values
-    ,INT   // constante intregi
-    ,REAL  // constante reale
-    ,STR    // constante string
-    };
+	// literal values
+	,INT   // constante intregi
+	,REAL  // constante reale
+	,STR    // constante string
+	};
 
-// SPACE; [ \n\t\r]+
-// COMMENT; '//'[^'\n']*('\n'|'\0')
+	// SPACE; [ \n\t\r]+
+	// COMMENT; '//'[^'\n']*('\n'|'\0')
 
 #define MAX_STR		127
 
 typedef struct{
-    int code;		// ID, TYPE_INT, ...
-    int line;		// the line from the input file
-    union{
-        char text[MAX_STR+1];		// the chars for ID, STR
-        int i;		// the value for INT
-        double r;		// the value for REAL
-    };
-}Token;
+	int code;		// ID, TYPE_INT, ...
+	int line;		// the line from the input file
+	union{
+		char text[MAX_STR+1];		// the chars for ID, STR
+		int i;		// the value for INT
+		double r;		// the value for REAL
+		};
+	}Token;
 
 #define MAX_TOKENS		4096
 extern Token tokens[];

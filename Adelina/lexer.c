@@ -45,7 +45,7 @@ void tokenize(const char *pch){
 				line++;
 				pch++;
 				break;
-
+		
 			case '\0':addTk(FINISH);return; //sfarsit de fisier
 			case ',':addTk(COMMA); pch++; break;
             case ';':addTk(SEMICOLON); pch++; break;
@@ -109,11 +109,11 @@ void tokenize(const char *pch){
 				tk = addTk(STR);   // folosește codul STR pentru constante string
 				copyn(tk->text, start, pch);
 				pch++;
-
+				
 				break;
 			default:
 			//id sau cuvant cheie
-				if(isalpha(*pch)||*pch=='_'){
+				if(isalpha(*pch)||*pch=='_'){ 
 					for(start=pch++;isalnum(*pch)||*pch=='_';pch++){}
 					char *text=copyn(buf,start,pch);
 					if(strcmp(text,"int")==0)addTk(TYPE_INT);
@@ -136,7 +136,7 @@ void tokenize(const char *pch){
 						start = pch;
 						int isReal = 0;
 						while(isdigit(*pch)) pch++;
-
+						
 						if(*pch == '.'){
 							if(isdigit(pch[1])){       // verificam daca urmeaza partea zecimala
 								isReal = 1;
@@ -146,7 +146,7 @@ void tokenize(const char *pch){
 								err("Numar real incomplet la linia %d", line); //mesaj eroare
 							}
 						}
-
+						
 						copyn(buf, start, pch);
 						tk = addTk(isReal ? REAL : INT);
 						if(isReal) tk->r = atof(buf); //convertim in double si il salvam in tk->r

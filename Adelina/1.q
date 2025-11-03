@@ -16,4 +16,4 @@ while(i<10)
     end
 
 puts("PI=");
-putr(3.14159);
+putr(3.123);
