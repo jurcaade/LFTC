@@ -34,7 +34,7 @@
 <body>
 
   <h2>Filtrare studenți după medie</h2>
-  <form method="POST" action="http://localhost/lab3/ex2/cod.php">
+  <form method="POST" action="cod.php">
     <input type="hidden" name="actiune" value="filtrare">
     <label>Introduceți media minimă: </label>
     <input type="number" step="0.01" name="media" required><br><br>
@@ -44,7 +44,7 @@
   <hr>
 
   <h2>Ștergere studenți sub o anumită medie</h2>
-  <form method="POST" action="http://localhost/lab3/ex2/cod.php">
+  <form method="POST" action="cod.php">
     <input type="hidden" name="actiune" value="stergere">
     <label>Introduceți media minimă: </label>
     <input type="number" step="0.01" name="media" required><br><br>
@@ -54,7 +54,7 @@
   <hr>
 
   <h2>Adăugare student</h2>
-  <form method="POST" action="http://localhost/lab3/ex2/cod.php">
+  <form method="POST" action="cod.php">
     <input type="hidden" name="actiune" value="adaugare">
     Nume: <br><input type="text" name="nume" required><br>
     Prenume: <br><input type="text" name="prenume" required><br>
@@ -62,6 +62,14 @@
     Nota1: <br><input type="number" name="nota1" required><br>
     Nota2: <br><input type="number" name="nota2" required><br><br>
     <input type="submit" value="Adaugă student">
+  </form>
+
+  <hr>
+
+  <h2>Studenți care nu au promovat laboratorul</h2>
+  <form method="POST" action="cod.php">
+    <input type="hidden" name="actiune" value="nepromovati">
+    <input type="submit" value="Afișează studenți nepromovați">
   </form>
 
 </body>
