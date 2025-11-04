@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Laborator 3 - Studenți</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    form {
+      display: inline-block;
+      text-align: left;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 5px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 200px;
+      margin-bottom: 8px;
+    }
+
+    hr {
+      width: 60%;
+      margin: 25px auto;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Filtrare studenți după medie</h2>
+  <form method="POST" action="http://localhost/lab3/ex2/cod.php">
+    <input type="hidden" name="actiune" value="filtrare">
+    <label>Introduceți media minimă: </label>
+    <input type="number" step="0.01" name="media" required><br><br>
+    <input type="submit" value="Afișează">
+  </form>
+
+  <hr>
+
+  <h2>Ștergere studenți sub o anumită medie</h2>
+  <form method="POST" action="http://localhost/lab3/ex2/cod.php">
+    <input type="hidden" name="actiune" value="stergere">
+    <label>Introduceți media minimă: </label>
+    <input type="number" step="0.01" name="media" required><br><br>
+    <input type="submit" value="Șterge">
+  </form>
+
+  <hr>
+
+  <h2>Adăugare student</h2>
+  <form method="POST" action="http://localhost/lab3/ex2/cod.php">
+    <input type="hidden" name="actiune" value="adaugare">
+    Nume: <br><input type="text" name="nume" required><br>
+    Prenume: <br><input type="text" name="prenume" required><br>
+    Grupa: <br><input type="number" name="grupa" required><br>
+    Nota1: <br><input type="number" name="nota1" required><br>
+    Nota2: <br><input type="number" name="nota2" required><br><br>
+    <input type="submit" value="Adaugă student">
+  </form>
+
+</body>
+</html>

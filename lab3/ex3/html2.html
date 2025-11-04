@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Aplicație Web - Evidență Cărți</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    form {
+      display: inline-block;
+      text-align: left;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 5px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 200px;
+      margin-bottom: 8px;
+    }
+
+    hr {
+      width: 60%;
+      margin: 25px auto;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Aplicație Web - Evidență Cărți</h1>
+  <hr>
+
+  <a href="cod2.php?actiune=listare">1️⃣ Listare toate cărțile</a><br><br>
+
+  <h3>2️⃣ Adaugă o carte nouă</h3>
+  <form method="POST" action="cod2.php">
+    <input type="hidden" name="actiune" value="adaugare">
+    Titlu: <br><input type="text" name="titlu" required><br>
+    Autor: <br><input type="text" name="autor" required><br>
+    Editura: <br><input type="text" name="editura" required><br>
+    Cod ISBN: <br><input type="text" name="isbn" required><br>
+    An apariție: <br><input type="number" name="an" required><br>
+    Nr exemplare stoc: <br><input type="number" name="stoc" required><br>
+    Preț: <br><input type="number" step="0.01" name="pret" required><br>
+    <input type="submit" value="Adaugă carte">
+  </form>
+
+  <hr>
+
+  <h3>3️⃣ Șterge o carte (după titlu)</h3>
+  <form method="POST" action="cod2.php">
+    <input type="hidden" name="actiune" value="stergere">
+    Titlu carte: <br><input type="text" name="titlu" required><br>
+    <input type="submit" value="Șterge carte">
+  </form>
+
+  <hr>
+
+  <h3>4️⃣ Vânzare carte</h3>
+  <form method="POST" action="cod2.php">
+    <input type="hidden" name="actiune" value="vanzare">
+    Titlu carte: <br><input type="text" name="titlu" required><br>
+    Nr exemplare vândute: <br><input type="number" name="nr_vandute" required><br>
+    <input type="submit" value="Vinde carte">
+  </form>
+
+  <hr>
+
+  <a href="cod2.php?actiune=vandute">5️⃣ Afișează cărțile vândute</a>
+
+</body>
+</html>
