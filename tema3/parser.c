@@ -52,7 +52,7 @@ bool defVar(){
     consume(VAR);
     if(!consume(ID)) tkerr("lipseste numele variabilei dupa 'var'");
 
-     /* semantic action: add symbol for the variable */
+     /* actiune semantica: adauga simbol pentru variabila */
     const char *name=consumed->text;
     Symbol *s=searchInCurrentDomain(name);
     if(s)tkerr("symbol redefinition: %s",name);
@@ -62,7 +62,7 @@ bool defVar(){
     if(!consume(COLON)) tkerr("lipseste ':' dupa numele variabilei");
     if(!baseType()) tkerr("lipseste tipul dupa ':' in declaratia de variabila");
 
-     /* semantic action: set the type of the newly added symbol from ret */
+      /* actiune semantica: seteaza tipul simbolului adaugat */
       s->type = ret.type;
 
     if(!consume(SEMICOLON)) tkerr("lipseste ';' la finalul declaratiei de variabila");
@@ -75,13 +75,13 @@ bool defFunc(){
     consume(FUNCTION);
     if(!consume(ID)) tkerr("lipsește numele funcției după 'function'");
 
-    /* semantic action: create function symbol and new domain */
+     /* actiune semantica: creeaza simbolul functiei si un nou domeniu */
     const char *name = consumed->text;
     Symbol *s = searchInCurrentDomain(name);
     if(s) tkerr("symbol redefinition: %s", name);
     crtFn = addSymbol(name, KIND_FN);
     crtFn->args = NULL;
-    addDomain(); /* new domain for function body and parameters */
+    addDomain(); /* domeniu nou pentru corpul functiei si parametri */
 
     if(!consume(LPAR)) tkerr("lipsește '(' după numele funcției");
     if(tokens[iTk].code != RPAR){
@@ -91,14 +91,14 @@ bool defFunc(){
     if(!consume(COLON)) tkerr("lipsește ':' după antetul funcției");
     if(!baseType()) tkerr("lipsește tipul de return după ':' în antetul funcției");
 
-    /* semantic action: set function return type */
+    /* actiune semantica: seteaza tipul de return al functiei */
     crtFn->type = ret.type;
 
     while(defVar()){}
     if(!block()) tkerr("lipsește corpul funcției (block)");
     if(!consume(END)) tkerr("lipsește 'end' după corpul funcției");
 
-    /* leave function domain */
+     /* paraseste domeniul functiei */
     delDomain();
     crtFn=NULL;
 
@@ -131,18 +131,18 @@ bool funcParam(){
     if(!consume(ID)) return false;
 
     const char *argName = consumed->text;
-     /* check redefinition in current domain */
+     /* verifica redefinire in domeniul curent */
     Symbol *s = searchInCurrentDomain(argName);
     if(s) tkerr("symbol redefinition: %s", argName);
 
     if(!consume(COLON)) tkerr("lipsește ':' după numele parametrului");
     if(!baseType()) tkerr("lipsește tipul după ':' în declarația parametrului");
 
-     /* semantic action: add parameter to current domain and to function's arg list */
+    /* actiune semantica: adauga parametrul in domeniul curent si in lista de argumente a functiei */
     s = addSymbol(argName, KIND_ARG);
     s->local = crtFn != NULL;
     s->type = ret.type;
-    /* also register in the function's args list and set its type */
+     /*  inregistreaza in lista de argumente a functiei si seteaza tipul */
     Symbol *sFnParam = addFnArg(crtFn, argName);
     if(sFnParam) sFnParam->type = ret.type;
 
@@ -371,11 +371,11 @@ bool program(){
 
 void parse(){
 	iTk=0;
-     addDomain();// create the global domain
+     addDomain(); // creeaza domeniul global
 	if (program()) {
     //printf("Program corect sintactic!\n");
     } else {
         printf("Eroare de sintaxă!\n");
     }
-     delDomain(); // delete the global domain
+     delDomain(); // sterge domeniul global
 }
