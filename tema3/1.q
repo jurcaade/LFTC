@@ -11,9 +11,9 @@ function max(x:int, y:int):int
 var i:int;
 i=0;  // iterator
 while(i<10)
-    puti(max(i,5));
+   // puti(max(i,5));
     i=i+1;
     end
 
-puts("PI=");
-putr(3.123);
+//puts("PI=");
+//putr(3.123);
