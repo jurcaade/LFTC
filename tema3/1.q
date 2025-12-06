@@ -1,6 +1,8 @@
 // program de test
 
 function max(x:int, y:int):int
+var j:real;
+j=2.4;
     if(x<y)
         return y;
         else
