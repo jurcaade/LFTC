@@ -4,6 +4,7 @@
     #include <stdarg.h>
     #include "lexer.h"
     #include "ad.h"
+    #include "at.h"
 
     int iTk;	// the iterator in tokens
     Token *consumed;	// the last consumed token
@@ -28,23 +29,26 @@
 
     // baseType ::= TYPE_INT | TYPE_REAL | TYPE_STR
     bool baseType(){
-        if(tokens[iTk].code == TYPE_INT){
-            consume(TYPE_INT);
-            ret.type = TYPE_INT;
-            return true;
-        }
-        if(tokens[iTk].code == TYPE_REAL){
-            consume(TYPE_REAL);
-            ret.type = TYPE_REAL;
-            return true;
-        }
-        if(tokens[iTk].code == TYPE_STR){
-            consume(TYPE_STR);
-            ret.type = TYPE_STR;
-            return true;
-        }
-        return false;
+    if(tokens[iTk].code == TYPE_INT){
+        consume(TYPE_INT);
+        ret.type = TYPE_INT;
+        ret.lval = false;
+        return true;
     }
+    if(tokens[iTk].code == TYPE_REAL){
+        consume(TYPE_REAL);
+        ret.type = TYPE_REAL;
+        ret.lval = false;
+        return true;
+    }
+    if(tokens[iTk].code == TYPE_STR){
+        consume(TYPE_STR);
+        ret.type = TYPE_STR;
+        ret.lval = false;
+        return true;
+    }
+    return false;
+}
 
     // defVar ::= VAR ID COLON baseType SEMICOLON
     bool defVar(){
@@ -157,6 +161,10 @@
             consume(IF);
             if(!consume(LPAR)) tkerr("lipsește '(' după 'if'");
             if(!expr()) tkerr("condiție invalidă pentru 'if' sau lipsește expresia");
+
+                /* semantic action: check that condition type is not STR */
+                if(ret.type==TYPE_STR) tkerr("the if condition must have type int or real");
+
             if(!consume(RPAR)) tkerr("lipsește ')' după condiția 'if'");
             if(!block()) tkerr("lipsește blocul de instrucțiuni după 'if'");
             if(consume(ELSE)){
@@ -169,6 +177,11 @@
         if(c==RETURN){
             consume(RETURN);
             if(!expr()) tkerr("lipsește expresia după 'return'");
+
+             /* semantic action: check return statement is in a function and types match */
+              if(!crtFn) tkerr("return can be used only in a function");
+              if(ret.type!=crtFn->type) tkerr("the return type must be the same as the function return type");
+              
             if(!consume(SEMICOLON)) tkerr("lipsește ';' după expresia return");
             return true;
         }
@@ -177,6 +190,10 @@
             consume(WHILE);
             if(!consume(LPAR)) tkerr("lipsește '(' după 'while'");
             if(!expr()) tkerr("condiție invalidă pentru 'while' sau lipsește expresia");
+
+              /* semantic action: check that condition type is not STR */
+             if(ret.type==TYPE_STR) tkerr("the while condition must have type int or real");
+             
             if(!consume(RPAR)) tkerr("lipsește ')' după condiția 'while'");
             if(!block()) tkerr("lipsește blocul de instrucțiuni după 'while'");
             if(!consume(END)) tkerr("lipsește 'end' după 'while'");
@@ -205,6 +222,11 @@
         if(!exprAssign()) return false;
         while(tokens[iTk].code==AND || tokens[iTk].code==OR){
             consume(tokens[iTk].code);
+
+             /* semantic action: check that operands have type int or real */
+            Ret leftType = ret;
+            if(leftType.type==TYPE_STR) tkerr("the left operand of '&&' or '||' cannot be of type string");
+
             if(!exprAssign()) 
             {
                 if (tokens[iTk-1].code == AND)
@@ -212,26 +234,43 @@
                 else if (tokens[iTk-1].code == OR)
                 tkerr("lipsește expresia după operatorul logic '||'");
             }
+
+            if(ret.type==TYPE_STR) tkerr("the right operand of '&&' or '||' cannot be of type string");
+            setRet(TYPE_INT,false); /* logical expressions have int type */
+
         }
         return true;
     }
 
     // exprAssign ::= ( ID ASSIGN )? exprComp
     bool exprAssign(){
-        if(tokens[iTk].code==ID && tokens[iTk+1].code==ASSIGN){
-            consume(ID);
-            consume(ASSIGN);
-            if(!exprComp()) tkerr("lipsește expresia după '='");
-            return true;
-        }
-        return exprComp();
-    }
+    if(tokens[iTk].code==ID && tokens[iTk+1].code==ASSIGN){
+        consume(ID);
+        /* semantic action: check that ID is a variable and is lval */
+        const char *name = consumed->text;
 
+        consume(ASSIGN);
+        if(!exprComp()) tkerr("expected expression after '='");
+
+        Symbol *s = searchSymbol(name);
+        if(!s) tkerr("undefined symbol '%s'", name);
+        if(s->kind == KIND_FN) tkerr("a function (%s) cannot be used as a destination for assignment ", name);
+        if(s->type!=ret.type) tkerr("the source and destination for assignment must have same type");
+        ret.lval = false;
+
+        return true;
+    }
+    return exprComp();
+}
     // exprComp ::= exprAdd ( ( LESS | EQUAL ) exprAdd )?
     bool exprComp(){
         if(!exprAdd()) return false;
         if(tokens[iTk].code==LESS || tokens[iTk].code==EQUAL){
             consume(tokens[iTk].code);
+
+            /* semantic action: */
+            Ret leftType = ret;
+
             if(!exprAdd())
             {
                 if (tokens[iTk-1].code == LESS)
@@ -239,6 +278,9 @@
                 else if (tokens[iTk-1].code == EQUAL)
                 tkerr("lipsește expresia după operatorul de comparație '=='");
             } 
+
+            if(leftType.type!=ret.type) tkerr("different types for the operands of '<' or '=='");
+             setRet(TYPE_INT, false);
         }
         return true;
     }
@@ -248,6 +290,11 @@
         if(!exprMul()) return false;
         while(tokens[iTk].code==ADD || tokens[iTk].code==SUB){
             consume(tokens[iTk].code);
+
+             /* semantic action: */
+            Ret leftType = ret;
+            if(leftType.type == TYPE_STR) tkerr("the operands of '+' or '-' cannot be of type str");
+
             if(!exprMul()) 
             {
                 if(tokens[iTk-1].code == ADD)
@@ -255,6 +302,9 @@
                 else if(tokens[iTk-1].code == SUB)
                 tkerr("lipsește termenul după operatorul '-'");
             }
+
+            /* semantic action: */
+            if(leftType.type != ret.type) tkerr("different types for the operands of '+' or '-'");
         }
         return true;
     }
@@ -264,6 +314,11 @@
         if(!exprPrefix()) return false;
         while(tokens[iTk].code==MUL || tokens[iTk].code==DIV){
             consume(tokens[iTk].code);
+
+            /* semantic action: */
+            Ret leftType=ret;
+            if(leftType.type==TYPE_STR)tkerr("the operands of * or / cannot be of type str");
+
             if(!exprPrefix())
             {
                 if(tokens[iTk-1].code == MUL)
@@ -271,41 +326,58 @@
                 else if(tokens[iTk-1].code == DIV)
                 tkerr("lipsește termenul după operatorul '/'");
             }
+
+             if(leftType.type!=ret.type)tkerr("different types for the operands of * or /");
+                ret.lval=false;
+
         }
         return true;
     }
 
     // exprPrefix ::= ( SUB | NOT )? factor
-    bool exprPrefix(){
-        if(tokens[iTk].code==SUB || tokens[iTk].code==NOT){
-            consume(tokens[iTk].code);
-        }
+   bool exprPrefix() {
+        int code = tokens[iTk].code;
+        int retFromFactor;
 
-        if(!factor()){
-            if(tokens[iTk].code == SUB)
-                tkerr("lipsește factorul după operatorul  '-'");
-            else if(tokens[iTk].code == NOT)
-                tkerr("lipsește factorul după operatorul  '!'");
-            return false;
-        }
-        return true;
+    switch (code){
+        case SUB:
+            consume(tokens[iTk].code);
+            retFromFactor = factor();
+            /* semantic analysis: */
+            if(ret.type==TYPE_STR)tkerr("the expression of unary - must be of type int or real");
+            ret.lval=false;
+            break;
+        case NOT:
+            consume(tokens[iTk].code);
+            retFromFactor = factor();
+            /* semantic analysis: */
+            if(ret.type==TYPE_STR)tkerr("the expression of ! must be of type int or real");
+            setRet(TYPE_INT,false);
+            break;
+        default:
+            retFromFactor = factor();
     }
+     return retFromFactor;
+}
 
     // factor ::= INT | REAL | STR | LPAR expr RPAR | ID ( LPAR ( expr ( COMMA expr )* )? RPAR )?
     bool factor(){
-    int c = tokens[iTk].code;
-        if(c==INT){
-            consume(INT); 
-            return true; 
-        }
-        if(c==REAL){
-            consume(REAL);
-            return true;
-        }
-        if(c==STR){
-            consume(STR);
-            return true;
-        }
+         int c = tokens[iTk].code;
+     if(c==INT){
+        consume(INT); 
+        setRet(TYPE_INT, false);
+        return true; 
+    }
+    if(c==REAL){
+        consume(REAL);
+        setRet(TYPE_REAL, false);
+        return true;
+    }
+    if(c==STR){
+        consume(STR);
+        setRet(TYPE_STR, false);
+        return true;
+    }
         if(c==LPAR){
             consume(LPAR);
             if(!expr()) tkerr("lipsește expresia după '('");
@@ -316,22 +388,43 @@
         if(c==ID){
             consume(ID);
 
+            /* semantic action: check that the symbol is defined */
             Symbol *s = searchSymbol(consumed->text);
-            if(!s) tkerr("undefined symbol: %s", consumed->text);
+            if(!s) tkerr("Undefined symbol: %s", consumed->text); 
 
             if(tokens[iTk].code==LPAR){
                 consume(LPAR);
+
+                /* semantic action: check that the symbol is a function */
+                  if(s->kind!= KIND_FN) tkerr("%s cannot be called, because it is not a function", s->name);
+                  Symbol *argDef = s->args;
+
                 if(tokens[iTk].code!=RPAR){
                     if(!expr()) tkerr("lipsește expresia în apelul funcției");
+
+                        /* semantic action: check argument types */
+                     if(!argDef) tkerr("the function %s is called with too many arguments", s->name);
+                     if(argDef->type != ret.type) tkerr("the argument type at function %s call is different from the one given at its definition", s->name);
+                     argDef=argDef->next;
+
                     while(consume(COMMA)){
                         if(!expr()) tkerr("lipsește expresia după ',' în apelul funcției");
+                        if(!argDef)tkerr("the function %s is called with too many arguments",s->name);
+                        if(argDef->type!=ret.type)tkerr("the argument type at function %s call is different from the one given at its definition",s->name);
+                        argDef=argDef->next;
                     }
                 }
                 if(!consume(RPAR)) tkerr("lipsește ')' după argumentele apelului funcției");
+                if(argDef)tkerr("the function %s is called with too few arguments",s->name);
+                setRet(s->type,false);
                 return true;
-            }
+             } else {
+            /* not a call: must be a variable (lvalue), not a function */
+            if(s->kind==KIND_FN) tkerr("the function %s can only be called", s->name);
+            setRet(s->type,true);
             return true;
         }
+    }
         return false;
     }
 
@@ -356,26 +449,25 @@
 
     // program ::= ( defVar | defFunc | block )* FINISH
     bool program(){
+        addDomain(); // creeaza domeniul global
+        addPredefinedFns();
         for(;;){
             if(defVar()){}
             else if(defFunc()){}
             else if(block()){}
             else break;
             }
-        if(consume(FINISH)){
-            return true;
-            }else tkerr("syntax error");
-        return false;
-    
+         if(!consume(FINISH)) tkerr("syntax error");
+
+    delDomain(); // sterge domeniul global
+    return true;
         }
 
     void parse(){
         iTk=0;
-        addDomain(); // creeaza domeniul global
         if (program()) {
         //printf("Program corect sintactic!\n");
         } else {
             printf("Eroare de sintaxă!\n");
         }
-        delDomain(); // sterge domeniul global
     }

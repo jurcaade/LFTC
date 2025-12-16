@@ -1,8 +1,8 @@
 // program de test
 
 function max(x:int, y:int):int
-var j:real;
-j=2.4;
+
+
     if(x<y)
         return y;
         else
@@ -11,11 +11,21 @@ j=2.4;
     end
 
 var i:int;
+var j:real;
+j=2.4;
 i=0;  // iterator
+
+ //i=max;
+//max(1);
+//max(2.4,2);
+//j(2);
+//return i;
+
 while(i<10)
-   // puti(max(i,5));
+    puti(max(i,5));
     i=i+1;
     end
+puts("PI=");
+putr(3.123);
 
-//puts("PI=");
-//putr(3.123);
+

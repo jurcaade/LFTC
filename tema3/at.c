@@ -3,8 +3,8 @@
 #include "lexer.h"
 #include "ad.h"
 
-// adds in ST a function with an argument
-// the argument has the type argType and the function returns the type retType
+// adauga in tabela de simboluri o functie cu un argument
+// argumentul are tipul argType iar functia returneaza tipul retType
 Symbol *addFn1Arg(const char *fnName,int argType,int retType){
     Symbol *fn=addSymbol(fnName,KIND_FN);
     fn->type=retType;
